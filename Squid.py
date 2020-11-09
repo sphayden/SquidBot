@@ -16,6 +16,10 @@ target_channel_id = 387793673775218690
 promo_code_channel = 488187995518664704
 THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 my_file = os.path.join(THIS_FOLDER, 'used_codes.txt')
+token = ""
+with open("C:\\Users\\sphay\\.credentials\\squidbot_token.txt", "r") as f:
+        lines = f.readlines()
+        token = lines[0].strip()
 
 ### Saves Code to txt file ###
 async def save_new_codes(code):
@@ -149,4 +153,4 @@ async def chicken():
 client.loop.create_task(check_for_codes())
 client.loop.create_task(change_defense())
 
-client.run('NjQwNjU3OTY4NDI5NDAwMDc1.Xb9BOg.KJR-vW8nAslOhKB8l74_aEl73gk')
+client.run(token)

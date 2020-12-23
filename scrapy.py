@@ -4,9 +4,12 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 import json
 def get_valid_coupons(valid_codes):
-
     try: 
-        driver = webdriver.Firefox()
+        print('getting valid codes')
+        fireFoxOptions = webdriver.FirefoxOptions()
+        fireFoxOptions.set_headless()
+        driver = webdriver.Firefox(firefox_options=fireFoxOptions)
+        #driver = webdriver.Firefox()
         driver.get('https://swq.jp/l/en-US/')
         time.sleep(5)
         html = driver.page_source
@@ -60,7 +63,7 @@ def get_expired_coupons(valid_codes):
 
 def main():
     valid_codes = []
-    print("Getting valid coupons")
+    print("entered main functions")
     get_valid_coupons(valid_codes)
     print(f"Valid coupon code object {valid_codes}")
     return valid_codes

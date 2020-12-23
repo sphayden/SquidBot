@@ -21,6 +21,7 @@ with open("C:\\Users\\sphay\\.credentials\\squidbot_token.txt", "r") as f:
         lines = f.readlines()
         token = lines[0].strip()
 
+
 ### Saves Code to txt file ###
 async def save_new_codes(code):
     try:
@@ -40,6 +41,12 @@ async def check_old_codes():
 async def get_codes():
     codes = sc.main()
     return codes
+
+@client.command(pass_context=True)
+async def get_guild_id(ctx):
+    id = ctx.message.guild.id
+    print(id)
+
 
 async def check_for_codes():
     await client.wait_until_ready()
@@ -120,37 +127,10 @@ async def change_defense():
         else:
             sleep = 43200
         await asyncio.sleep(sleep)
-
-
-
-async def chicken():
-    await client.wait_until_ready()
-    discord_users = [
-        '179098163947372545'
-    ]
-    channel = client.get_channel(target_channel_id)
-    print('squid wants his chickens')
-    chicken_shit = [
-        'How can you be so bad',
-        'Step it up mate',
-        'Squid said he will suck you',
-        '1000+ days and still no ld5 rip'
-    ]
-    if client.is_closed():
-        print(client.is_closed())
-        print('not running just yet')
-    while not client.is_closed():
-        time = randint(100000,900000)
-        print(time)
-        print('My Time Has Come')
-        response = "{} <@{}>".format(random.choice(chicken_shit),random.choice(discord_users))
-        print(response)
-        await channel.send(response)
-        await asyncio.sleep(time)
-        
+       
 
 #client.loop.create_task(chicken())
 client.loop.create_task(check_for_codes())
 client.loop.create_task(change_defense())
-
+print("token " +token)
 client.run(token)

@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+"discord.py" = "*"
+python-dotenv = "*"
+beautifulsoup4 = "*"
+requests = "*"
+selenium = "*"
+pymongo = "*"
+
+[requires]
+python_version = "3.7"
+
+[dev-packages]
+
+[scripts]
+dev = "nodemon --exec python squid.py"

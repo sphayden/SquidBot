@@ -1,26 +1,21 @@
-import discord
 from discord.ext import commands, tasks
+import discord
 from datetime import date, datetime, time
 import calendar
-from random import *
 import os
-import random
+from dotenv import load_dotenv
 import asyncio
-from itertools import cycle
 import scrapy as sc
+load_dotenv()
 
 kas = '@562100990610898976'
-client = discord.Client()
-bot = commands.Bot("!")
+#client = discord.Client()
+bot = commands.Bot(command_prefix='!', description="bitch")
 target_channel_id = 387793673775218690
-promo_code_channel = 488187995518664704
+promo_code_channel = 774665918067769354
 THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 my_file = os.path.join(THIS_FOLDER, 'used_codes.txt')
-token = ""
-with open("C:\\Users\\sphay\\.credentials\\squidbot_token.txt", "r") as f:
-        lines = f.readlines()
-        token = lines[0].strip()
-
+guilds_dict = {}
 
 ### Saves Code to txt file ###
 async def save_new_codes(code):
@@ -42,74 +37,64 @@ async def get_codes():
     codes = sc.main()
     return codes
 
-@client.command(pass_context=True)
+@bot.command(name="gid")
 async def get_guild_id(ctx):
     id = ctx.message.guild.id
-    print(id)
+    await ctx.channel.send("Guild id: " + str(id))
+
+@bot.command(name="check-codes")
+async def check_for_codes(ctx):
+    await ctx.channel.send("Checking for valid codes")
+    channel = bot.get_channel(promo_code_channel)
+    #Create list of embeds for codes
+    codes = await get_codes()
+    used_codes = await check_old_codes()
+    try:
+        for code in codes:
+            if code['Coupon_code'] in used_codes:
+                print(f"{code['Coupon_code']} has already been posted")
+                #await channel.send(f"No new codes at this time.")
+            else:
+                for i, reward in enumerate(code['Code_rewards']):
+                    emoji = discord.utils.get(bot.emojis, name=reward[0])
+                    code['Code_rewards'][i][0] = str(emoji)
+                    code['Code_rewards'][i] = "".join(code['Code_rewards'][i])
+                    print(code['Code_rewards'][i])
+                code['Code_rewards'] = "  ".join(code['Code_rewards'])
+                embed = discord.Embed(title=code['Coupon_code'], colour=0x4262F4)
+                embed.set_thumbnail(url="https://sph-sw-bot-image-hosting.s3.us-east-2.amazonaws.com/sw.png")
+                embed.add_field(name="Rewards", value=f"{code['Code_rewards']}")
+                await channel.send(content=None, embed=embed)
+                await save_new_codes(code['Coupon_code'])
+        await ctx.channel.send("Process complete")
+    except Exception as e:
+        print(f"Exception happened: {e}")
+
+@bot.command(name="set-codes-channel")
+@commands.has_permissions(administrator=True)
+@commands.has_role("The Editor")
+async def set_guild_codes_channel(ctx, channel_id):
+    guild_id = ctx.message.guild.id
+    guilds_dict = {
+        guild_id:{
+            "guild_name": ctx.message.guild.name,
+            "codes_channel": channel_id
+        }
+    }
+    print(guilds_dict)
 
 
-async def check_for_codes():
-    await client.wait_until_ready()
-    while not client.is_closed():
-        channel = client.get_channel(promo_code_channel)
-        #Create list of embeds for codes
-        codes = await get_codes()
-        used_codes = await check_old_codes()
-        try:
-            for code in codes:
-                if code['Coupon_code'] in used_codes:
-                    print(f"{code['Coupon_code']} has already been posted")
-                    #await channel.send(f"No new codes at this time.")
-                else:
-                    for i, reward in enumerate(code['Code_rewards']):
-                        emoji = discord.utils.get(client.emojis, name=reward[0])
-                        code['Code_rewards'][i][0] = str(emoji)
-                        code['Code_rewards'][i] = "".join(code['Code_rewards'][i])
-                        print(code['Code_rewards'][i])
-                    code['Code_rewards'] = "  ".join(code['Code_rewards'])
-                    embed = discord.Embed(title=code['Coupon_code'], colour=0x4262F4)
-                    embed.set_thumbnail(url="https://sph-sw-bot-image-hosting.s3.us-east-2.amazonaws.com/sw.png")
-                    embed.add_field(name="Rewards", value=f"{code['Code_rewards']}")
-                    await channel.send(content=None, embed=embed)
-                    await save_new_codes(code['Coupon_code'])
-            print("going to sleep for 5 minutes")
-            await asyncio.sleep(300)
-        except Exception as e:
-            print(f"Exception happened: {e}")
-            await asyncio.sleep(300)
 
-@client.event
+@bot.event
 async def on_ready():
     print('Bot is ready')
 
-async def on_message(message):
-    if message.author == client.user:
-        return
-    chicken_shit = [
-        'WHERE IS MY CHICKEN, BITCH??, <@562100990610898976>',
-        '<@562100990610898976>? KAS?!?!',
-        (
-            'Cool. Cool cool cool cool cool cool cool, '
-            'no doubt no doubt no doubt no doubt,'
-            'Wheres my fookin chicken mate <@562100990610898976>'
-        ),
-        '<@562100990610898976>, HAVE YOU SEEN MY CHICKEN?!?!?!',
-        '<@562100990610898976>, where have you been hiding my chicken',
-        'My chicken is missing. Where has it gone? <@562100990610898976>',
-        '<@562100990610898976>, :chicken: :chicken: :chicken:'
-    ]
-    if message.content == '$chicken':
-        response = random.choice(chicken_shit)
-        await message.channel.send(response)
-    if message.content =='$defense':
-        await message.channel.send('@everyone CHANGE YOUR DEFENSES YOU SLOOTS')
-
 async def change_defense():
-    await client.wait_until_ready()
-    while not client.is_closed():
+    await bot.wait_until_ready()
+    while not bot.is_closed():
         weekday = calendar.day_name[datetime.now().weekday()]
         sleep = 0
-        channel = client.get_channel(target_channel_id)
+        channel = bot.get_channel(target_channel_id)
         print(weekday)
         if weekday == 'Sunday' or weekday == 'Thursday':
             current_time = datetime.now().time()
@@ -128,9 +113,10 @@ async def change_defense():
             sleep = 43200
         await asyncio.sleep(sleep)
        
-
-#client.loop.create_task(chicken())
-client.loop.create_task(check_for_codes())
-client.loop.create_task(change_defense())
-print("token " +token)
-client.run(token)
+@bot.event
+async def on_command_error(ctx, error):
+    await ctx.channel.send(f"Command failed due to {error}")
+#bot.loop.create_task(check_for_codes(commands.Context()))
+#bot.loop.create_task(change_defense())
+bot.load_extension('cogs.SetupCommands')
+bot.run(os.getenv("BOT_TOKEN"))
